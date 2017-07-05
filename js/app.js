@@ -23,6 +23,7 @@ function onError(e) {
 // FILESYSTEM SUPPORT ----------------------------------------------------------
 var fs = null;
 var FOLDERNAME = 'test';
+var db=null;
 
 function writeFile(blob) {
   if (!fs) {
@@ -66,15 +67,65 @@ gDriveApp.factory('gdocs', function() {
 // Main Angular controller for app.
 function DocsController($scope, $http, gdocs) {
   $scope.docs = [];
-
+    
+    function successCallbackUpload(resp, status, headers, config) {console.log(resp);console.log(status);console.log(headers);console.log(config)}
+    
+    function updateVal(currentEle, value) {
+        $(currentEle).html('<input class="thVal" type="text" value="' + value + '" />');
+        $(".thVal").focus();
+        $(".thVal").keyup(function (event) {
+        if (event.keyCode == 13) {
+            $(currentEle).html($(".thVal").val().trim());
+            console.log($(currentEle).data('tabla'));
+            
+            if ($(currentEle).data('tabla')==='mission'){
+                var res = db.exec("UPDATE mission SET text='"+$(".thVal").val().trim()+"' WHERE _id=1");
+                const boundary = '-------314159265358979323846';
+                const delimiter = "\r\n--" + boundary + "\r\n";
+                const close_delim = "\r\n--" + boundary + "--";
+                var reader = new FileReader();
+                reader.readAsBinaryString(db);
+                var contentType = db.type || 'application/octet-stream';
+                var base64Data = btoa(reader.result);
+                var multipartRequestBody =
+                    delimiter +'Content-Type: application/json\r\n\r\n' +
+                    JSON.stringify(fileMetadata) +delimiter +
+                    'Content-Type: ' + contentType + '\r\n' +
+                    'Content-Transfer-Encoding: base64\r\n' +
+                    '\r\n' +base64Data +close_delim;
+                var params={'uploadType': 'multipart', 'alt': 'json'};
+                var opt_headers={'Content-Type': 'multipart/mixed; boundary="' + boundary + '"'};
+                gdocs.makeRequest("PUT", gdocs.FILE_UPLOAD, successCallbackUpload, opt_data, opt_headers);
+            }
+            
+            $(".edit-db").dblclick(function (e) { editDblClk(e,this); });
+        }});
+    }
 	
+    function editDblClk(e,t){
+        e.stopPropagation();      //<-------stop the bubbling of the event here
+        e.preventDefault(); 
+        var currentEle = $(t);
+        var value = $(t).html();
+        updateVal(currentEle, value);
+        $(".edit-db").off("dblclick");
+        return false;
+    }
+    
+    $(".edit-db").dblclick(function (e) { editDblClk(e,this); });
+    
 	function openBCP(blob){
 		
 		var uInt8Array = new Uint8Array(blob);
-		var db = new SQL.Database(uInt8Array);
-		var contents = db.exec("SELECT * FROM mission");
-		console.log(contents);
-		return;
+		db = new SQL.Database(uInt8Array);
+		var mission = db.exec("SELECT * FROM mission");
+        console.log(mission);
+        var missionText=mission[0].values[0][1];
+        
+        $('#main-mission-content').html(missionText);
+        $('#main-mission-content').data('tabla','mission');
+        $('#main-mission-content').data('datos',mission);
+        return;
 		
 		var uints = new Uint8Array(blob);
 		var db = new SQL.Database(uints);

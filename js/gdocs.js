@@ -48,6 +48,10 @@ function GDocs(selector) {
   this.__defineGetter__('DEFAULT_CHUNK_SIZE', function() {
     return 1024 * 1024 * 5; // 5MB;
   });
+    
+  this.__defineGetter__('FILE_UPLOAD', function() {
+    return "https://www.googleapis.com/upload/drive/v2/files/";
+  });
 };
 
 GDocs.prototype.auth = function(interactive, opt_callback) {
@@ -96,7 +100,7 @@ GDocs.prototype.makeRequest = function(method, url, callback, opt_data, opt_head
   
 	console.log(url);
 	
-	var data = opt_data || null;
+  var data = opt_data || null;
   var headers = opt_headers || {};
 
   var xhr = new XMLHttpRequest();
