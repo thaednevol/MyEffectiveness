@@ -1,20 +1,35 @@
 {
-  "manifest_version": 2,
-  "name": "MyEffectiveness 2",
-  "version": "2",
-  "description":"App to manage My Effectiveness",
-  "permissions": ["tabs","activeTab", "https://ajax.googleapis.com/"],
-  "background":
-  {
-	 "scripts": ["background.js","assets/jquery.js","assets/jquery-ui.min.js","js/my.js" ]
-  },
-  "browser_action":
-  {
-	"default_icon": "icon_128.png"
-  },
-  "content_scripts": [{
-     "js": ["assets/jquery.js", "assets/jquery-ui.min.js","js/my.js"],
-     "matches": ["http://*/*", "https://*/*"]
-   }], 
-  "minimum_chrome_version": "28"
+	"name": "MyEffectiveness",
+	"manifest_version": 2,
+    "version": "0.1",
+    "minimum_chrome_version": "28",
+	"description":"App to manage My Effectiveness",
+	"permissions": [
+		"tabs",
+		"activeTab", 
+		"https://ajax.googleapis.com/",
+		"https://apis.google.com/",
+		"identity",
+		"https://ssl.gstatic.com/",
+		"https://www.googleapis.com/",
+		"https://accounts.google.com/"
+	],
+	"background": {
+		"scripts": ["js/background.js","js/jquery.js","js/jquery-ui.min.js","js/my.js","js/auth.js","js/api.js","js/sql.js"]
+	},
+	"browser_action": {
+		"default_icon": "icon_128.png"
+	},
+	"content_scripts": [{
+		 "js": ["js/jquery.js", "js/jquery-ui.min.js","js/my.js","js/auth.js","js/api.js","js/sql.js"],
+		 "matches": ["http://*/*", "https://*/*"]
+	   }],
+	"oauth2": {
+		"client_id": "489876531249-rl90kalai3trhet31mv54skvlnjoe39k.apps.googleusercontent.com",
+			"scopes": [
+			  "https://www.googleapis.com/auth/drive"
+			]
+	},
+	"content_security_policy":"script-src 'self' 'unsafe-eval'; object-src 'self';"
 }
+

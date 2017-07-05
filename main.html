@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<!--
+Copyright 2012 Google Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Author: Eric Bidelman (ericbidelman@chromium.org)
+-->
+<html data-ng-app="gDriveApp" ng-csp="">
+<head>
+<meta charset="utf-8" />
+<title>Google Drive Uploader</title>
+<link rel="stylesheet" media="all" href="css/bootstrap.css">
+<link rel="stylesheet" media="all" href="css/main.css">
+<link rel="stylesheet" media="all" href="styles/main.css" >
+<link rel="stylesheet" media="all" href="css/jquery-ui.min.css">
+<link rel="stylesheet" media="all" href="css/awesome-menu.css">
+<link rel="stylesheet" media="all" href="css/my.css">
+	
+<script src="js/jquery.js"></script>    
+<script src="js/jquery-ui.min.js"></script>
+<script src="js/util.js"></script>
+<script src="js/dnd.js"></script>
+<script src="js/upload.js"></script>
+<script src="js/gdocs.js"></script>
+<script src="js/angular-1.1.0.min.js"></script>
+<script src="js/sql.js"></script>	
+<script src="js/app.js"></script>
+<script src="js/awesome-menu.js"></script>
+<script src="js/my.js"></script>
+<base target="_blank">
+</head>
+<body data-ng-controller="DocsController">
+
+	
+<div id="tabs">
+  <ul>
+    <li><a href="#tabs-1">Nunc tincidunt</a></li>
+    <li><a href="#tabs-2">Proin dolor</a></li>
+    <li><a href="#tabs-3">Aenean lacinia</a></li>
+  </ul>
+  <div id="tabs-1">
+    <h2>Content heading 1</h2>
+    <p>Proin elit arcu, rutrum commodo, vehicula tempus, commodo a, risus. Curabitur nec arcu. Donec sollicitudin mi sit amet mauris. Nam elementum quam ullamcorper ante. Etiam aliquet massa et lorem. Mauris dapibus lacus auctor risus. Aenean tempor ullamcorper leo. Vivamus sed magna quis ligula eleifend adipiscing. Duis orci. Aliquam sodales tortor vitae ipsum. Aliquam nulla. Duis aliquam molestie erat. Ut et mauris vel pede varius sollicitudin. Sed ut dolor nec orci tincidunt interdum. Phasellus ipsum. Nunc tristique tempus lectus.</p>
+  </div>
+  <div id="tabs-2">
+    <h2>Content heading 2</h2>
+    <p>Morbi tincidunt, dui sit amet facilisis feugiat, odio metus gravida ante, ut pharetra massa metus id nunc. Duis scelerisque molestie turpis. Sed fringilla, massa eget luctus malesuada, metus eros molestie lectus, ut tempus eros massa ut dolor. Aenean aliquet fringilla sem. Suspendisse sed ligula in ligula suscipit aliquam. Praesent in eros vestibulum mi adipiscing adipiscing. Morbi facilisis. Curabitur ornare consequat nunc. Aenean vel metus. Ut posuere viverra nulla. Aliquam erat volutpat. Pellentesque convallis. Maecenas feugiat, tellus pellentesque pretium posuere, felis lorem euismod felis, eu ornare leo nisi vel felis. Mauris consectetur tortor et purus.</p>
+  </div>
+  <div id="tabs-3">
+    <h2>Content heading 3</h2>
+    <p>Mauris eleifend est et turpis. Duis id erat. Suspendisse potenti. Aliquam vulputate, pede vel vehicula accumsan, mi neque rutrum erat, eu congue orci lorem eget lorem. Vestibulum non ante. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce sodales. Quisque eu urna vel enim commodo pellentesque. Praesent eu risus hendrerit ligula tempus pretium. Curabitur lorem enim, pretium nec, feugiat nec, luctus a, lacus.</p>
+    <p>Duis cursus. Maecenas ligula eros, blandit nec, pharetra at, semper at, magna. Nullam ac lacus. Nulla facilisi. Praesent viverra justo vitae neque. Praesent blandit adipiscing velit. Suspendisse potenti. Donec mattis, pede vel pharetra blandit, magna ligula faucibus eros, id euismod lacus dolor eget odio. Nam scelerisque. Donec non libero sed nulla mattis commodo. Ut sagittis. Donec nisi lectus, feugiat porttitor, tempor ac, tempor vitae, pede. Aenean vehicula velit eu tellus interdum rutrum. Maecenas commodo. Pellentesque nec elit. Fusce in lacus. Vivamus a libero vitae lectus hendrerit hendrerit.</p>
+  </div>
+</div>
+
+	
+<div id="dropper">
+  <div class="dropzone"><img src="img/upload.svg"></div>
+</div>
+
+<section id="main">
+  <nav>
+    <h2>Google Drive Uploader</h2>
+    <button id="authorize-button" class="btn" data-ng-click="toggleAuth(true)">{{authButtonLabel()}}</button>
+    <button class="btn" data-ng-click="fetchDocs(flase)">Refresh</button>
+    <button class="btn" id="close-button" title="Close">x</button>
+  </nav>
+
+  <progress></progress>
+  <ul>
+    <li data-ng-repeat="doc in docs">
+      <!-- crbug.com/120693. Anchors need target="_blank", but <base> is taking care of this for us :) -->
+      <img data-ng-src="{{doc.icon}}"> <a href="{{doc.alternateLink}}">{{doc.title}}</a>  {{doc.size}}
+      <span class="date">{{doc.updatedDate}}</span>
+    </li>
+  </ul>
+</section>
+
+</body>
+</html>
