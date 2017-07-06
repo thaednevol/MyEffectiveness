@@ -50,7 +50,7 @@ function GDocs(selector) {
   });
     
   this.__defineGetter__('FILE_UPLOAD', function() {
-    return "https://www.googleapis.com/upload/drive/v2/files/";
+    return "https://www.googleapis.com/upload/drive/v2/files";
   });
 };
 
@@ -114,9 +114,13 @@ GDocs.prototype.makeRequest = function(method, url, callback, opt_data, opt_head
 
   xhr.onload = function(e) {
     this.lastResponse = this.response;
-    callback(this.lastResponse, this);
+    console.log("RESPUESTA: ");
+      console.log(xhr);
+      callback(this.lastResponse, this);
+      
   }.bind(this);
   xhr.onerror = function(e) {
+      console.log("ERROR");
     console.log(this, this.status, this.response,
                 this.getAllResponseHeaders());
   };
@@ -160,3 +164,85 @@ GDocs.prototype.upload = function(blob, callback, retry) {
 };
 
 
+GDocs.prototype.download=function(file,callback){
+    if (file.downloadUrl) {
+        var accessToken = this.accessToken;
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', file.downloadUrl,true);
+        xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+        xhr.responseType = 'arraybuffer';
+        xhr.onload = function() {
+            callback(this.response);
+        };
+        xhr.onerror = function() {
+            callback(null);
+        };
+        xhr.send();
+        } else {
+            callback(null);
+        }
+}
+
+GDocs.prototype.updateDB=function(callback){
+    var dbStr = window.localStorage.getItem("MyEffectiveness.sqlite");
+        var dbMod = new SQL.Database(Util.toBinArray(dbStr));
+        
+        var mission = dbMod.exec("SELECT * FROM mission");
+        console.log("MISION GUARDADA");
+        console.log(mission);
+        
+        var docId = $(document).data('doc-id');
+        var fileMetadata=$(document).data('doc-file');
+        
+        const boundary = '-------314159265358979323846';
+        const delimiter = "\r\n--" + boundary + "\r\n";
+        const close_delim = "\r\n--" + boundary + "--";
+        //var reader = new FileReader();
+        //reader.readAsBinaryString(db);
+        var contentType = dbMod.type || 'application/x-sqlite3';
+
+        var arraybuff = dbMod.buffer;
+        var blob = new Blob([arraybuff]);
+        var base64Data = btoa(blob);
+
+        var multipartRequestBody =
+            delimiter + 'Content-Type: application/json\r\n\r\n' +
+            JSON.stringify(fileMetadata) +
+            delimiter + 
+            'Content-Type: '+contentType+'\r\n' +
+            'Content-Transfer-Encoding: base64\r\n' +
+            '\r\n' +base64Data +
+            close_delim;
+
+        var opt_headers={'Content-Type': 'multipart/mixed; boundary="' + boundary + '"'};
+        
+        console.log(multipartRequestBody);
+    
+        var formData = new FormData();
+        formData.append('uploadType', 'multipart');
+        formData.append('alt', 'json');
+        formData.append('body', multipartRequestBody);
+    
+        $.ajax({
+          url: 'https://www.googleapis.com/upload/drive/v3/files/'+docId,
+          type: 'PATCH',
+          headers: {
+            "Authorization": 'Bearer ' + this.accessToken,
+            "Content-Type": 'multipart/related; boundary="'+ boundary + '"'
+          },
+          success: function() {
+            console.log('>>> DONE');
+          },
+          error: function(e) {
+            console.log(e);
+          },
+          data: dbMod,
+          cache: false,
+          contentType: false,
+          processData: false,
+          crossDomain: true
+        });
+    
+    
+        //this.makeRequest("PUT", this.FILE_UPLOAD+?uploadType=multipart+docId, callback, params, opt_headers);
+}

@@ -75,27 +75,21 @@ function DocsController($scope, $http, gdocs) {
         $(".thVal").focus();
         $(".thVal").keyup(function (event) {
         if (event.keyCode == 13) {
-            $(currentEle).html($(".thVal").val().trim());
+            var str=$(".thVal").val().trim();
+            $(currentEle).html(str);
             console.log($(currentEle).data('tabla'));
             
             if ($(currentEle).data('tabla')==='mission'){
-                var res = db.exec("UPDATE mission SET text='"+$(".thVal").val().trim()+"' WHERE _id=1");
-                const boundary = '-------314159265358979323846';
-                const delimiter = "\r\n--" + boundary + "\r\n";
-                const close_delim = "\r\n--" + boundary + "--";
-                var reader = new FileReader();
-                reader.readAsBinaryString(db);
-                var contentType = db.type || 'application/octet-stream';
-                var base64Data = btoa(reader.result);
-                var multipartRequestBody =
-                    delimiter +'Content-Type: application/json\r\n\r\n' +
-                    JSON.stringify(fileMetadata) +delimiter +
-                    'Content-Type: ' + contentType + '\r\n' +
-                    'Content-Transfer-Encoding: base64\r\n' +
-                    '\r\n' +base64Data +close_delim;
-                var params={'uploadType': 'multipart', 'alt': 'json'};
-                var opt_headers={'Content-Type': 'multipart/mixed; boundary="' + boundary + '"'};
-                gdocs.makeRequest("PUT", gdocs.FILE_UPLOAD, successCallbackUpload, opt_data, opt_headers);
+                var dbStr = window.localStorage.getItem("MyEffectiveness.sqlite");
+                var db = new SQL.Database(Util.toBinArray(dbStr));
+                var res = db.exec("UPDATE mission SET text='"+str+"' WHERE _id=1");
+                db.run("INSERT INTO mission VALUES (2,'HOLA')");
+                console.log("ANTES DE RES");
+                console.log(res);
+                console.log("Despues DE RES");
+                var dbstr = Util.toBinString(db.export());
+                window.localStorage.setItem("MyEffectiveness.sqlite", dbstr);
+                gdocs.updateDB(null);
             }
             
             $(".edit-db").dblclick(function (e) { editDblClk(e,this); });
@@ -115,9 +109,8 @@ function DocsController($scope, $http, gdocs) {
     $(".edit-db").dblclick(function (e) { editDblClk(e,this); });
     
 	function openBCP(blob){
-		
-		var uInt8Array = new Uint8Array(blob);
-		db = new SQL.Database(uInt8Array);
+        var uInt8Array = new Uint8Array(blob);
+		var db = new SQL.Database(uInt8Array);
 		var mission = db.exec("SELECT * FROM mission");
         console.log(mission);
         var missionText=mission[0].values[0][1];
@@ -125,6 +118,8 @@ function DocsController($scope, $http, gdocs) {
         $('#main-mission-content').html(missionText);
         $('#main-mission-content').data('tabla','mission');
         $('#main-mission-content').data('datos',mission);
+        var dbstr = Util.toBinString(db.export());
+        window.localStorage.setItem("MyEffectiveness.sqlite", dbstr);
         return;
 		
 		var uints = new Uint8Array(blob);
@@ -141,30 +136,11 @@ function DocsController($scope, $http, gdocs) {
 	
   function getBCP(resp, status, headers, config) {
 	  var totalEntries = resp.items.length;
-	  
-	  console.log(resp.items[0]);
-	  
 	  var file=resp.items[0];
-	  var config = {
-		  responseType: 'blob',
-        headers: {
-          'Authorization': 'Bearer ' + gdocs.accessToken
-        }
-      };
-	  /*
-	  $http.get(file.downloadUrl, config).success(function(blob) {	  
-	     openBCP(blob);	
-	  });
-	  */
-	  var xhr = new XMLHttpRequest();
-	  xhr.open('GET',file.downloadUrl , true);
-	  xhr.setRequestHeader("Authorization", 'Bearer ' + gdocs.accessToken);
-      xhr.responseType = 'arraybuffer';
-
-      xhr.onload = function(e) {
-		  openBCP(this.response);
-		};
-		xhr.send();
+	  
+      $(document).data('doc-id',file.id);
+      $(document).data('doc-file',file);
+      gdocs.download(file,openBCP);
   }
 	
   // Response handler that caches file icons in the filesystem API.
