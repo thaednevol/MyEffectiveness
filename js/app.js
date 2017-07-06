@@ -80,15 +80,11 @@ function DocsController($scope, $http, gdocs) {
             console.log($(currentEle).data('tabla'));
             
             if ($(currentEle).data('tabla')==='mission'){
-                var dbStr = window.localStorage.getItem("MyEffectiveness.sqlite");
+                var dbStr = window.localStorage.getItem("MyEffectiveness.bcp");
                 var db = new SQL.Database(Util.toBinArray(dbStr));
                 var res = db.exec("UPDATE mission SET text='"+str+"' WHERE _id=1");
-                db.run("INSERT INTO mission VALUES (2,'HOLA')");
-                console.log("ANTES DE RES");
-                console.log(res);
-                console.log("Despues DE RES");
                 var dbstr = Util.toBinString(db.export());
-                window.localStorage.setItem("MyEffectiveness.sqlite", dbstr);
+                window.localStorage.setItem("MyEffectiveness.bcp", dbstr);
                 gdocs.updateDB(null);
             }
             
@@ -119,7 +115,7 @@ function DocsController($scope, $http, gdocs) {
         $('#main-mission-content').data('tabla','mission');
         $('#main-mission-content').data('datos',mission);
         var dbstr = Util.toBinString(db.export());
-        window.localStorage.setItem("MyEffectiveness.sqlite", dbstr);
+        window.localStorage.setItem("MyEffectiveness.bcp", dbstr);
         return;
 		
 		var uints = new Uint8Array(blob);
